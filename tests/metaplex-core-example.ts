@@ -4,7 +4,7 @@ import { MetaplexCoreExample } from "../target/types/metaplex_core_example";
 
 import wallet from "../wba-wallet.json"
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { createPluginV2, createV1, fetchAssetV1, mplCore, pluginAuthority, MPL_CORE_PROGRAM_ID, createCollection } from "@metaplex-foundation/mpl-core";
+import { createPluginV2, createV1, transferV1, fetchAssetV1, mplCore, pluginAuthority, MPL_CORE_PROGRAM_ID } from "@metaplex-foundation/mpl-core";
 import { base58, createSignerFromKeypair, generateSigner, signerIdentity, sol } from "@metaplex-foundation/umi";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { SYSTEM_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/native/system";
@@ -16,7 +16,6 @@ let keypair = umi.eddsa.createKeypairFromSecretKey(new Uint8Array(wallet));
 const signer = createSignerFromKeypair(umi, keypair);
 umi.use(signerIdentity(signer));
 
-const collectionAsset = generateSigner(umi);
 const asset = generateSigner(umi);
 
 describe("metaplex-core-example", () => {
@@ -31,28 +30,16 @@ describe("metaplex-core-example", () => {
     console.log(airdrop1);
   });
 
-  it("Create a Collection Asset", async() => {
-    const result = await createCollection(umi, {
-      collection: collectionAsset,
-      name: 'My Collection',
-      uri: 'https://example.com/my-collection.json',
-    }).sendAndConfirm(umi);
-
-    console.log("\nCollection Asset minted. Transaction signature: ", base58.deserialize(result.signature)[0])
-  });
-
   it("Create an Asset", async () => {
     const result = await createV1(umi, {
       asset: asset,
       name: 'My Nft',
       uri: 'https://example.com/my-nft',
-      collection: collectionAsset.publicKey,
-      updateAuthority: keypair.publicKey,
       plugins: [
         {
           plugin: createPluginV2({
             type: 'Attributes',
-            attributeList: [{ key: 'key', value: 'value' }],
+            attributeList: [{ key: 'Ledger', value: 'Flex' }],
           }),
           authority: pluginAuthority('UpdateAuthority'),
         },

@@ -3,3 +3,5 @@ wba-wallet.json
 /target
 /.anchor
 /node_modules
+.DS_Store
+/migrations

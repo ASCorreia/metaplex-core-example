@@ -1,11 +1,20 @@
 use anchor_lang::prelude::*;
 
-use mpl_core::{instructions::CreateV1CpiBuilder, types::{Attribute, Attributes, DataState, PluginAuthorityPair}};
+use mpl_core::{
+    instructions::CreateV1CpiBuilder, 
+    types::{
+        Attribute, 
+        Attributes, 
+        DataState, 
+        PluginAuthorityPair
+    }
+};
 
 #[derive(Accounts)]
 pub struct MintAsset<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
+    /// CHECK: This is the mint account of the asset to be minted
     #[account(mut)]
     pub mint: Signer<'info>,
     pub system_program: Program<'info, System>,
@@ -31,8 +40,8 @@ impl<'info> MintAsset<'info> {
                 plugin: mpl_core::types::Plugin::Attributes(Attributes { attribute_list: 
                     vec![
                         Attribute { 
-                            key: "key".to_string(), 
-                            value: "value".to_string() 
+                            key: "Ledger".to_string(), 
+                            value: "Vault".to_string() 
                         }
                     ]
                 }), 
