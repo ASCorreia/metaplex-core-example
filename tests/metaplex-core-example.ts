@@ -8,7 +8,6 @@ import { createPluginV2, createV1, transferV1, fetchAssetV1, mplCore, pluginAuth
 import { base58, createSignerFromKeypair, generateSigner, signerIdentity, sol } from "@metaplex-foundation/umi";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { SYSTEM_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/native/system";
-import { TOKEN_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
 
 const umi = createUmi("http://127.0.0.1:8899").use(mplCore());
 
@@ -25,9 +24,28 @@ describe("metaplex-core-example", () => {
 
   const program = anchor.workspace.MetaplexCoreExample as Program<MetaplexCoreExample>;
 
+  const collection = Keypair.generate();
+  const authority = anchor.web3.PublicKey.findProgramAddressSync([Buffer.from("authority"), collection.publicKey.toBuffer()], program.programId);
+
   it("Request Airdrop", async () => {
     let airdrop1 = await umi.rpc.airdrop(keypair.publicKey, sol(10));
     console.log(airdrop1);
+  });
+
+  it("Create a Collection", async () => {
+    console.log("\nCollection address: ", collection.publicKey.toBase58());
+
+    const tx = await program.methods.createCollection(authority[1])
+      .accountsPartial({
+        user: provider.publicKey,
+        collection: collection.publicKey,
+        authority: authority[0],
+        systemProgram: SYSTEM_PROGRAM_ID,
+      })
+      .signers([collection])
+      .rpc();
+
+    console.log("\nCollection Created! Your transaction signature", tx);
   });
 
   it("Create an Asset", async () => {
@@ -55,21 +73,16 @@ describe("metaplex-core-example", () => {
     console.log("\nAsset fetched:\n", fetchedAsset)
   });
 
-  it("Is initialized!", async () => {
-    // Add your test here.
-    const tx = await program.methods.initialize().rpc();
-    console.log("\nYour transaction signature", tx);
-  });
-
   it("Mint Core Asset", async () => {
     const asset = Keypair.generate();
 
     console.log("\nAsset address: ", asset.publicKey.toBase58());
 
-    const tx = await program.methods.mintAsset()
+    const tx = await program.methods.mintAsset(authority[1])
       .accountsPartial({
         user: provider.publicKey,
         mint: asset.publicKey,
+        collection: collection.publicKey,
         systemProgram: SYSTEM_PROGRAM_ID,
         mplCoreProgram: MPL_CORE_PROGRAM_ID,
       })
