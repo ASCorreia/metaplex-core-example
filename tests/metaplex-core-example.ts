@@ -25,7 +25,10 @@ describe("metaplex-core-example", () => {
   const program = anchor.workspace.MetaplexCoreExample as Program<MetaplexCoreExample>;
 
   const collection = Keypair.generate();
-  const authority = anchor.web3.PublicKey.findProgramAddressSync([Buffer.from("authority"), collection.publicKey.toBuffer()], program.programId);
+  const authority = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("authority"), collection.publicKey.toBuffer()],
+    program.programId
+  );
 
   it("Request Airdrop", async () => {
     let airdrop1 = await umi.rpc.airdrop(keypair.publicKey, sol(10));
@@ -35,7 +38,7 @@ describe("metaplex-core-example", () => {
   it("Create a Collection", async () => {
     console.log("\nCollection address: ", collection.publicKey.toBase58());
 
-    const tx = await program.methods.createCollection(authority[1])
+    const tx = await program.methods.createCollection()
       .accountsPartial({
         user: provider.publicKey,
         collection: collection.publicKey,
@@ -57,7 +60,11 @@ describe("metaplex-core-example", () => {
         {
           plugin: createPluginV2({
             type: 'Attributes',
-            attributeList: [{ key: 'Ledger', value: 'Flex' }],
+            attributeList: [
+              { 
+                key: 'Ledger', value: 'Flex', 
+              }
+            ],
           }),
           authority: pluginAuthority('UpdateAuthority'),
         },
@@ -78,7 +85,7 @@ describe("metaplex-core-example", () => {
 
     console.log("\nAsset address: ", asset.publicKey.toBase58());
 
-    const tx = await program.methods.mintAsset(authority[1])
+    const tx = await program.methods.mintAsset()
       .accountsPartial({
         user: provider.publicKey,
         mint: asset.publicKey,
